@@ -105,6 +105,7 @@
 .sb-widget-right{text-align:right}
 .sb-widget-date{font-size:13px;font-weight:500}
 .sb-widget-greet{font-size:12px;opacity:.72;margin-top:3px}
+.sb-wallpaper-btn{margin-top:10px;align-self:flex-start;padding:5px 13px;border-radius:999px;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.22);color:inherit;font-size:12px;font-weight:600;cursor:pointer}
 
 /* 照片 / 便签小组件 */
 .sb-widget-row2{display:flex;gap:10px;margin:0 0 12px}

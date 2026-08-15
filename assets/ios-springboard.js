@@ -178,7 +178,10 @@
           '<div class="sb-widget-date" data-role="wdate"></div>' +
           '<div class="sb-widget-greet" data-role="wgreet"></div>' +
         '</div>' +
-      '</div>';
+      '</div>' +
+      '<button type="button" class="sb-wallpaper-btn">换壁纸</button>';
+    var btn = w.querySelector('.sb-wallpaper-btn');
+    btn.addEventListener('click', function () { changeWallpaper(); });
     return w;
   }
 
@@ -650,22 +653,29 @@
     root.classList.toggle('sb-dark', dark);
   }
 
-  /* 读取壁纸：优先本桌面自己设置的 __sb_wallpaper，其次应用 settings 里的 wallpaper */
+  /* 读取壁纸：优先本桌面自己设置的，其次扫描所有键找 wallpaper 字段（data/http/blob） */
   function applyWallpaper() {
     if (!root) return;
     var w = '';
     try {
       w = localStorage.getItem('__sb_wallpaper') || '';
-      if (!w) w = localStorage.getItem('ai_wallpaper') || '';
       if (!w) {
-        var keys = ['settings', 'settings-theme', 'theme'];
-        for (var i = 0; i < keys.length && !w; i++) {
-          var raw = localStorage.getItem(keys[i]);
+        for (var i = 0; i < localStorage.length; i++) {
+          var key = localStorage.key(i);
+          var raw = localStorage.getItem(key);
           if (!raw) continue;
-          try {
-            var o = JSON.parse(raw);
-            w = o.wallpaper || o.wallpaperRef || o.lockScreenWallpaper || o.lockScreenWallpaperRef || '';
-          } catch (e) {}
+          if (key.toLowerCase().indexOf('wallpaper') !== -1 && (raw.indexOf('data:') === 0 || raw.indexOf('http') === 0 || raw.indexOf('blob:') === 0)) {
+            w = raw; break;
+          }
+          if (raw.charAt(0) === '{') {
+            try {
+              var o = JSON.parse(raw);
+              var cand = o.wallpaper || o.lockScreenWallpaper || o.wallpaperRef || o.lockScreenWallpaperRef;
+              if (cand && (String(cand).indexOf('data:') === 0 || String(cand).indexOf('http') === 0 || String(cand).indexOf('blob:') === 0)) {
+                w = String(cand); break;
+              }
+            } catch (e) {}
+          }
         }
       }
     } catch (e) {}
