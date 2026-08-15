@@ -105,6 +105,7 @@
   var edgeTimer = null, edgeDir = 0;
   var activePointerId = null;
   var hideTimer = null;
+  var wallpaperInput = null;
 
   /* ---------- 工具 ---------- */
   function isHome() {
@@ -530,6 +531,12 @@
           enterEdit();
           if (lpTarget) { startDrag(lpTarget, e.clientX, e.clientY); lpTarget = null; }
         }, 500);
+      } else {
+        /* 长按空白处 → 上传图片换壁纸 */
+        lpTimer = setTimeout(function () {
+          lpTimer = null;
+          changeWallpaper();
+        }, 700);
       }
     });
 
@@ -612,16 +619,19 @@
       root.classList.add('sb-visible');
       if (willShow) { updateClock(); setPage(currentPage, false); }
     } else {
-      /* 离开桌面：先淡出，再真正隐藏，和页面切换平滑衔接 */
+      /* 离开桌面：先保持不透明盖住切换，再淡出，最后隐藏（避免白屏） */
       if (!hideTimer) {
-        root.classList.add('sb-leaving');
         hideTimer = setTimeout(function () {
           hideTimer = null;
-          if (!isHome()) {
-            root.classList.remove('sb-visible');
-            root.classList.remove('sb-leaving');
-          }
-        }, 420);
+          if (isHome()) return;
+          root.classList.add('sb-leaving');
+          setTimeout(function () {
+            if (!isHome()) {
+              root.classList.remove('sb-visible');
+              root.classList.remove('sb-leaving');
+            }
+          }, 320);
+        }, 180);
       }
     }
   }
@@ -640,12 +650,13 @@
     root.classList.toggle('sb-dark', dark);
   }
 
-  /* 读取应用设置的壁纸，作为桌面背景（换壁纸后桌面跟着变） */
+  /* 读取壁纸：优先本桌面自己设置的 __sb_wallpaper，其次应用 settings 里的 wallpaper */
   function applyWallpaper() {
     if (!root) return;
     var w = '';
     try {
-      w = localStorage.getItem('ai_wallpaper') || '';
+      w = localStorage.getItem('__sb_wallpaper') || '';
+      if (!w) w = localStorage.getItem('ai_wallpaper') || '';
       if (!w) {
         var keys = ['settings', 'settings-theme', 'theme'];
         for (var i = 0; i < keys.length && !w; i++) {
@@ -667,6 +678,28 @@
       root.style.backgroundSize = '';
       root.style.backgroundPosition = '';
     }
+  }
+
+  /* 长按桌面空白处：上传图片当壁纸 */
+  function initWallpaperInput() {
+    wallpaperInput = document.createElement('input');
+    wallpaperInput.type = 'file';
+    wallpaperInput.accept = 'image/*';
+    wallpaperInput.style.display = 'none';
+    document.body.appendChild(wallpaperInput);
+    wallpaperInput.addEventListener('change', function () {
+      var f = wallpaperInput.files && wallpaperInput.files[0];
+      if (!f) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        try { localStorage.setItem('__sb_wallpaper', reader.result); } catch (e) {}
+        applyWallpaper();
+      };
+      reader.readAsDataURL(f);
+    });
+  }
+  function changeWallpaper() {
+    if (wallpaperInput) wallpaperInput.click();
   }
 
   /* 让桌面精确套进 .phone-frame（手机框） */
@@ -721,6 +754,7 @@
     bindClick();
     patchHistory();
     applyDark();
+    initWallpaperInput();
     applyWallpaper();
     setPage(0, false);
     startFrameSync();
