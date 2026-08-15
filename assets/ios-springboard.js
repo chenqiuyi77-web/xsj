@@ -644,7 +644,20 @@
   function applyWallpaper() {
     if (!root) return;
     var w = '';
-    try { w = localStorage.getItem('ai_wallpaper') || ''; } catch (e) {}
+    try {
+      w = localStorage.getItem('ai_wallpaper') || '';
+      if (!w) {
+        var keys = ['settings', 'settings-theme', 'theme'];
+        for (var i = 0; i < keys.length && !w; i++) {
+          var raw = localStorage.getItem(keys[i]);
+          if (!raw) continue;
+          try {
+            var o = JSON.parse(raw);
+            w = o.wallpaper || o.wallpaperRef || o.lockScreenWallpaper || o.lockScreenWallpaperRef || '';
+          } catch (e) {}
+        }
+      }
+    } catch (e) {}
     if (w && (w.indexOf('http') === 0 || w.indexOf('data:') === 0 || w.indexOf('blob:') === 0)) {
       root.style.backgroundImage = 'url("' + w.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '")';
       root.style.backgroundSize = 'cover';
