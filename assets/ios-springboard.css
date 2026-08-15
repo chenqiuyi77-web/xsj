@@ -1,0 +1,258 @@
+/* iOS 主屏（Springboard）覆盖层 —— 黑白灰低饱和（ins 风），独立注入 */
+#ios-springboard{
+  position:fixed;
+  left:0;
+  top:0;
+  width:100vw;
+  height:100vh;             /* 兜底：JS 会用 .phone-frame 的真实位置/尺寸覆盖 */
+  z-index:50;
+  display:none;
+  flex-direction:column;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Segoe UI",Roboto,sans-serif;
+  user-select:none;
+  -webkit-user-select:none;
+  touch-action:none;
+  overflow:hidden;
+  color:#55555a;            /* 浅色模式：柔和深灰文字 */
+  background:linear-gradient(180deg,#f7f7f9 0%,#efeff2 45%,#e0e0e4 100%);
+  transition:opacity .18s ease;
+}
+#ios-springboard.sb-visible{display:flex}
+#ios-springboard.sb-dark{
+  color:#f5f5f7;            /* 深色模式：浅色文字 */
+  background:linear-gradient(180deg,#0e0e10 0%,#18181b 50%,#232327 100%);
+}
+
+/* 让手机框成为 position:fixed 的包含块：修正底栏/悬浮按钮/音乐球/弹窗遮罩飞出手机框的问题 */
+.phone-frame{transform:translateZ(0)}
+
+/* ---- 顶部状态栏 ---- */
+.sb-status{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:calc(env(safe-area-inset-top, 0px) + 10px) 26px 8px;
+  font-size:15px;
+  font-weight:600;
+  letter-spacing:.2px;
+  color:inherit;
+}
+.sb-status svg{display:block}
+.sb-status-right{display:flex;align-items:center;gap:7px}
+
+/* 编辑模式下的“完成”按钮 */
+.sb-done-btn{
+  position:absolute;
+  top:calc(env(safe-area-inset-top, 0px) + 8px);
+  right:16px;
+  z-index:12;
+  display:none;
+  border:none;
+  padding:5px 14px;
+  border-radius:999px;
+  font-size:14px;
+  font-weight:700;
+  color:#55555a;
+  background:rgba(255,255,255,.9);
+  box-shadow:0 2px 10px rgba(0,0,0,.12);
+  cursor:pointer;
+}
+#ios-springboard.sb-dark .sb-done-btn{color:#f5f5f7;background:rgba(58,58,62,.92)}
+#ios-springboard.sb-editing .sb-done-btn{display:block}
+#ios-springboard.sb-editing .sb-status-right{visibility:hidden}
+
+/* ---- 分页轨道 ---- */
+.sb-pages{position:relative;flex:1;overflow:hidden}
+.sb-track{
+  display:flex;
+  height:100%;
+  width:100%;
+  will-change:transform;
+  transition:transform .35s cubic-bezier(.25,.8,.3,1);
+}
+.sb-page{
+  flex:0 0 100%;
+  height:100%;
+  box-sizing:border-box;
+  padding:calc(env(safe-area-inset-top, 0px) + 20px) 16px 10px;
+}
+
+/* ---- 小组件（时钟 / 日期 / 问候，磨砂玻璃） ---- */
+.sb-widget{
+  margin:0 0 14px;
+  padding:14px 16px;
+  border-radius:20px;
+  color:inherit;
+  background:rgba(255,255,255,.32);
+  backdrop-filter:blur(22px) saturate(160%);
+  -webkit-backdrop-filter:blur(22px) saturate(160%);
+  border:1px solid rgba(255,255,255,.5);
+  box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+#ios-springboard.sb-dark .sb-widget{
+  background:rgba(45,45,50,.36);
+  border-color:rgba(255,255,255,.16);
+}
+.sb-widget-row{display:flex;align-items:center;justify-content:space-between}
+.sb-widget-time{font-size:40px;font-weight:700;letter-spacing:.5px;line-height:1}
+.sb-widget-right{text-align:right}
+.sb-widget-date{font-size:13px;font-weight:500}
+.sb-widget-greet{font-size:12px;opacity:.72;margin-top:3px}
+
+/* 照片 / 便签小组件 */
+.sb-widget-row2{display:flex;gap:10px;margin:0 0 12px}
+.sb-widget-half{flex:1;min-width:0;display:flex;flex-direction:column;border-radius:16px;padding:10px;color:inherit;background:rgba(255,255,255,.32);backdrop-filter:blur(22px) saturate(160%);-webkit-backdrop-filter:blur(22px) saturate(160%);border:1px solid rgba(255,255,255,.5);box-shadow:0 2px 10px rgba(0,0,0,.08)}
+#ios-springboard.sb-dark .sb-widget-half{background:rgba(45,45,50,.36);border-color:rgba(255,255,255,.16)}
+.sb-widget-label{font-size:11px;font-weight:600;opacity:.6;margin-bottom:7px;text-transform:uppercase;letter-spacing:.05em}
+.sb-photos{display:flex;gap:7px}
+.sb-photo-slot{flex:1;aspect-ratio:1/1;border-radius:10px;overflow:hidden;background:rgba(127,127,127,.12);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.sb-photo-slot img{width:100%;height:100%;object-fit:cover;display:block}
+.sb-photo-slot i{font-size:20px;opacity:.55}
+.sb-note-input{flex:1;width:100%;min-height:64px;border:none;background:transparent;color:inherit;font-size:13px;line-height:1.5;resize:none;outline:none;font-family:inherit}
+.sb-note-input::placeholder{opacity:.5}
+
+/* ---- 网格（4 列固定，含可留空格子） ---- */
+.sb-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  grid-auto-rows:84px;
+  row-gap:10px;
+  column-gap:8px;
+}
+.sb-cell{
+  position:relative;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  border-radius:16px;
+}
+.sb-cell.sb-dragging{opacity:.3}
+.sb-cell.sb-drop-target{
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.4);
+  background:rgba(0,0,0,.06);
+}
+#ios-springboard.sb-dark .sb-cell.sb-drop-target{
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.65);
+  background:rgba(255,255,255,.12);
+}
+
+/* ---- 单个应用图标（黑白灰方块 + 线性图标） ---- */
+.sb-app{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  width:100%;
+  background:none;
+  border:none;
+  padding:0;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.sb-app:active .sb-tile{transform:scale(.86);filter:brightness(.92)}
+.sb-tile{
+  width:100%;
+  aspect-ratio:1/1;
+  max-width:58px;
+  border-radius:23%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#3f3f44;            /* 图标图案颜色保持不变（柔和深灰） */
+  background:rgba(255,255,255,.32);
+  backdrop-filter:blur(22px) saturate(160%);
+  -webkit-backdrop-filter:blur(22px) saturate(160%);
+  border:1px solid rgba(255,255,255,.5);
+  box-shadow:0 2px 10px rgba(0,0,0,.10);
+  transition:transform .12s ease,filter .12s ease;
+}
+#ios-springboard.sb-dark .sb-tile{
+  background:rgba(255,255,255,.13);
+  border-color:rgba(255,255,255,.18);
+}
+.sb-tile i{font-size:27px;line-height:1}
+.sb-label{
+  font-size:11px;
+  font-weight:500;
+  color:inherit;
+  text-shadow:0 1px 1px rgba(255,255,255,.5);
+  max-width:72px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#ios-springboard.sb-dark .sb-label{text-shadow:0 1px 2px rgba(0,0,0,.4)}
+
+/* ---- 页面指示点 ---- */
+.sb-dots{
+  position:absolute;
+  left:0;right:0;
+  bottom:calc(env(safe-area-inset-bottom, 0px) + 112px);
+  display:flex;
+  justify-content:center;
+  gap:7px;
+  pointer-events:none;
+}
+.sb-dot{width:7px;height:7px;border-radius:50%;background:rgba(0,0,0,.22);transition:background .2s ease,transform .2s ease}
+.sb-dot.sb-active{background:rgba(0,0,0,.65);transform:scale(1.15)}
+#ios-springboard.sb-dark .sb-dot{background:rgba(255,255,255,.35)}
+#ios-springboard.sb-dark .sb-dot.sb-active{background:rgba(255,255,255,.9)}
+
+/* ---- 底部 Dock（4 格，可留空） ---- */
+.sb-dock{
+  flex-shrink:0;
+  margin:0 10px calc(env(safe-area-inset-bottom, 0px) + 10px);
+  padding:9px 8px;
+  border-radius:28px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  background:rgba(255,255,255,.34);
+  backdrop-filter:blur(34px) saturate(170%);
+  -webkit-backdrop-filter:blur(34px) saturate(170%);
+  border:1px solid rgba(255,255,255,.5);
+  box-shadow:0 10px 30px rgba(0,0,0,.12);
+}
+#ios-springboard.sb-dark .sb-dock{
+  background:rgba(45,45,50,.36);
+  border-color:rgba(255,255,255,.14);
+}
+.sb-dock .sb-cell{flex:1;align-items:center;justify-content:center;border-radius:18px}
+.sb-dock .sb-tile{max-width:56px}
+.sb-dock .sb-tile i{font-size:26px}
+
+/* ---- 编辑模式（长按后抖动） ---- */
+#ios-springboard.sb-editing .sb-tile{animation:sb-jiggle .3s infinite}
+#ios-springboard.sb-editing .sb-app:active .sb-tile{transform:none}
+@keyframes sb-jiggle{
+  0%{transform:rotate(0)}
+  25%{transform:rotate(-1.6deg)}
+  50%{transform:rotate(0)}
+  75%{transform:rotate(1.6deg)}
+  100%{transform:rotate(0)}
+}
+.sb-cell.sb-dragging .sb-tile,.sb-cell.sb-dragging .sb-app{animation:none}
+
+/* 拖拽跟随手指的“幽灵”图标 */
+.sb-drag-ghost{
+  position:fixed;
+  left:0;top:0;
+  width:60px;height:60px;
+  border-radius:23%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:300;
+  pointer-events:none;
+  background:rgba(255,255,255,.34);
+  backdrop-filter:blur(22px) saturate(160%);
+  -webkit-backdrop-filter:blur(22px) saturate(160%);
+  border:1px solid rgba(255,255,255,.55);
+  box-shadow:0 14px 34px rgba(0,0,0,.28);
+  transform:scale(1.12);
+  will-change:left,top;
+}
+#ios-springboard.sb-dark .sb-drag-ghost{
+  background:rgba(255,255,255,.15);
+  border-color:rgba(255,255,255,.2);
+}

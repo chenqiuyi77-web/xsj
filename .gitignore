@@ -1,0 +1,8 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 本地临时/元数据（非应用运行所需）
+_extracted_urls.txt
+_firebase_config.txt

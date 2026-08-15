@@ -1,0 +1,1 @@
+const e=/^https?:\/\//i,o=/^data:image\//i,c=/^blob:/i,a=/^\/\//;function s(r){const n=String(r||"").trim();if(!n)return"";const t=a.test(n)?`https:${n}`:n;return e.test(t)||o.test(t)||c.test(t)?t:null}function u(r){if(!r||typeof r!="object")return"";const n=[r.imageUrl,r.image,r.url];for(const t of n){const i=String(t??"").trim();if(i)return i}return""}export{s as n,u as r};
