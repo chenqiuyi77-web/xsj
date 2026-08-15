@@ -640,6 +640,22 @@
     root.classList.toggle('sb-dark', dark);
   }
 
+  /* 读取应用设置的壁纸，作为桌面背景（换壁纸后桌面跟着变） */
+  function applyWallpaper() {
+    if (!root) return;
+    var w = '';
+    try { w = localStorage.getItem('ai_wallpaper') || ''; } catch (e) {}
+    if (w && (w.indexOf('http') === 0 || w.indexOf('data:') === 0 || w.indexOf('blob:') === 0)) {
+      root.style.backgroundImage = 'url("' + w.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '")';
+      root.style.backgroundSize = 'cover';
+      root.style.backgroundPosition = 'center';
+    } else {
+      root.style.backgroundImage = '';
+      root.style.backgroundSize = '';
+      root.style.backgroundPosition = '';
+    }
+  }
+
   /* 让桌面精确套进 .phone-frame（手机框） */
   function matchFrame() {
     if (!root) return;
@@ -692,6 +708,7 @@
     bindClick();
     patchHistory();
     applyDark();
+    applyWallpaper();
     setPage(0, false);
     startFrameSync();
     sync();
@@ -700,6 +717,7 @@
     window.addEventListener('popstate', sync);
     setInterval(updateClock, 30000);
     setInterval(sync, 500);
+    setInterval(applyWallpaper, 800);
 
     if (window.MutationObserver) {
       var mo = new MutationObserver(applyDark);
