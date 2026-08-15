@@ -15,9 +15,10 @@
   overflow:hidden;
   color:#55555a;            /* 浅色模式：柔和深灰文字 */
   background:linear-gradient(180deg,#f7f7f9 0%,#efeff2 45%,#e0e0e4 100%);
-  transition:opacity .18s ease;
+  transition:opacity .3s ease;
 }
 #ios-springboard.sb-visible{display:flex}
+#ios-springboard.sb-leaving{opacity:0;pointer-events:none}
 #ios-springboard.sb-dark{
   color:#f5f5f7;            /* 深色模式：浅色文字 */
   background:linear-gradient(180deg,#0e0e10 0%,#18181b 50%,#232327 100%);
@@ -28,6 +29,9 @@
 
 /* 彻底隐藏原主页 HomeView（已被 iOS 桌面替代），避免点应用时闪一下 */
 [data-v-88dcb77c]{display:none!important}
+
+/* 彻底隐藏锁屏页（不再需要解锁） */
+.lockscreen-root{display:none!important}
 
 /* ---- 顶部状态栏 ---- */
 .sb-status{

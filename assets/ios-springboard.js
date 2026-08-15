@@ -607,16 +607,21 @@
 
     if (show) {
       if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+      root.classList.remove('sb-leaving');
       if (willShow) matchFrame();
       root.classList.add('sb-visible');
       if (willShow) { updateClock(); setPage(currentPage, false); }
     } else {
-      /* 离开桌面时延迟隐藏，盖住路由切换动画，避免露出原主页 */
+      /* 离开桌面：先淡出，再真正隐藏，和页面切换平滑衔接 */
       if (!hideTimer) {
+        root.classList.add('sb-leaving');
         hideTimer = setTimeout(function () {
           hideTimer = null;
-          if (!isHome()) root.classList.remove('sb-visible');
-        }, 450);
+          if (!isHome()) {
+            root.classList.remove('sb-visible');
+            root.classList.remove('sb-leaving');
+          }
+        }, 420);
       }
     }
   }
