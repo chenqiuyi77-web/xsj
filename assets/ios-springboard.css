@@ -26,6 +26,9 @@
 /* 让手机框成为 position:fixed 的包含块：修正底栏/悬浮按钮/音乐球/弹窗遮罩飞出手机框的问题 */
 .phone-frame{transform:translateZ(0)}
 
+/* 彻底隐藏原主页 HomeView（已被 iOS 桌面替代），避免点应用时闪一下 */
+[data-v-88dcb77c]{display:none!important}
+
 /* ---- 顶部状态栏 ---- */
 .sb-status{
   display:flex;
@@ -217,7 +220,7 @@
   background:rgba(45,45,50,.36);
   border-color:rgba(255,255,255,.14);
 }
-.sb-dock .sb-cell{flex:1;align-items:center;justify-content:center;border-radius:18px}
+.sb-dock .sb-cell{flex:1;align-items:center;justify-content:center;border-radius:18px;min-height:56px}
 .sb-dock .sb-tile{max-width:56px}
 .sb-dock .sb-tile i{font-size:26px}
 

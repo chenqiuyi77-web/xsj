@@ -104,6 +104,7 @@
   var dropTarget = null;       /* {kind,page,cell,cellEl} */
   var edgeTimer = null, edgeDir = 0;
   var activePointerId = null;
+  var hideTimer = null;
 
   /* ---------- 工具 ---------- */
   function isHome() {
@@ -601,10 +602,23 @@
   function sync() {
     if (!root) return;
     var home = isHome();
-    var willShow = home && !root.classList.contains('sb-visible');
-    if (willShow) matchFrame();
-    root.classList.toggle('sb-visible', home && frameReady);
-    if (willShow && frameReady) { updateClock(); setPage(currentPage, false); }
+    var show = home && frameReady;
+    var willShow = show && !root.classList.contains('sb-visible');
+
+    if (show) {
+      if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+      if (willShow) matchFrame();
+      root.classList.add('sb-visible');
+      if (willShow) { updateClock(); setPage(currentPage, false); }
+    } else {
+      /* 离开桌面时延迟隐藏，盖住路由切换动画，避免露出原主页 */
+      if (!hideTimer) {
+        hideTimer = setTimeout(function () {
+          hideTimer = null;
+          if (!isHome()) root.classList.remove('sb-visible');
+        }, 450);
+      }
+    }
   }
   function updateClock() {
     var d = new Date();
