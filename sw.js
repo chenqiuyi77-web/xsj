@@ -149,7 +149,7 @@ self.addEventListener('fetch', (event) => {
   // JS/CSS/字体 - 网络优先（保证能拿到最新改动），离线时才回退缓存
   if (CACHEABLE_TYPES.includes(dest)) {
     event.respondWith(
-      fetch(event.request, { cache: 'reload' })
+      fetch(event.request)
         .then((response) => {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
