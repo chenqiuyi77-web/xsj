@@ -146,21 +146,19 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // JS/CSS/字体 - 缓存优先（带 hash 的文件名不会变）
+  // JS/CSS/字体 - 网络优先（保证能拿到最新改动），离线时才回退缓存
   if (CACHEABLE_TYPES.includes(dest)) {
     event.respondWith(
-      caches.match(event.request)
-        .then((cached) => {
-          if (cached) return cached;
-          return fetch(event.request).then((response) => {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, clone);
-              trimCache(); // 异步清理
-            });
-            return response;
+      fetch(event.request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, clone);
+            trimCache();
           });
+          return response;
         })
+        .catch(() => caches.match(event.request))
     );
     return;
   }
