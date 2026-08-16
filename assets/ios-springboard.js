@@ -178,10 +178,7 @@
           '<div class="sb-widget-date" data-role="wdate"></div>' +
           '<div class="sb-widget-greet" data-role="wgreet"></div>' +
         '</div>' +
-      '</div>' +
-      '<button type="button" class="sb-wallpaper-btn">换壁纸</button>';
-    var btn = w.querySelector('.sb-wallpaper-btn');
-    btn.addEventListener('click', function () { changeWallpaper(); });
+      '</div>';
     return w;
   }
 
